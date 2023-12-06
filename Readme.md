@@ -1,5 +1,7 @@
 # Quoter
 
+Task for Kameleoon
+
 The service is deployed on a rented server.  http://sergeiprojects.ru:8080
 
 Docker compose file is also included (./docker/compose.yaml)
@@ -8,7 +10,8 @@ Docker compose file is also included (./docker/compose.yaml)
 
 All api definitions available by url http://sergeiprojects.ru:8080/swagger-ui/index.html
 
-Postman collection https://api.postman.com/collections/15518308-9e6c25f6-87c7-44b3-9290-f3ee95f2ee26?access_key=PMAT-01HGYZ9YZZW8ZPKFQT3B0NTVYX
+Postman
+collection https://api.postman.com/collections/15518308-9e6c25f6-87c7-44b3-9290-f3ee95f2ee26?access_key=PMAT-01HGYZ9YZZW8ZPKFQT3B0NTVYX
 
 Authorization header is used for authorization ("BASIC login:password", login:password in base 64 of course).
 
