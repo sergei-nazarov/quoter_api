@@ -30,7 +30,7 @@ Authorization header is used for authorization ("BASIC login:password", login:pa
 7. Get random quote. GET localhost:8080/quote/random
 8. Get last quotes. GET localhost:8080/quotes
 9. Get TOP RATING quotes. GET localhost:8080/quotes?sort=rating,DESC
-10. Get WORSE quotes. GET localhost:8080/quotes?sort=rating,ASC
+10. Get WORST quotes. GET localhost:8080/quotes?sort=rating,ASC
 11. Rate quote. POST localhost:8080/quote/{id}/rate
 12. Get data for the "time-rating" graph. GET localhost:8080/quote/{id}/graph
 
