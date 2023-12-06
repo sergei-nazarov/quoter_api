@@ -87,7 +87,7 @@ public class QuoteRestController {
         try {
             return quoteService.updateQuote(id, quoteDto, userDetails.getUser());
         } catch (QuoteNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Quote with id " + id + " not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Quote with id " + id + "doesn't found");
         } catch (IllegalAccessException e) { //todo better move to controller advice
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not the owner of the quote");
         }
@@ -173,7 +173,7 @@ public class QuoteRestController {
         if (userInfo.isPresent()) {
             return userInfo.get();
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username " + username + " not exists");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username " + username + " doesn't exist");
         }
     }
 }
