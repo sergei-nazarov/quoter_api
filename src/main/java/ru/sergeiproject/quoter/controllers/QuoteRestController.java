@@ -104,10 +104,10 @@ public class QuoteRestController {
     }
 
     /**
-     * Get user's qutes
+     * Get quotes of a user by username
      */
     @GetMapping("/users/{username}/quotes")
-    @Operation(summary = "Get quotes by username")
+    @Operation(summary = "Get quotes of a user by username")
     Page<Quote> getQuotesByUsername(@PathVariable("username") String username,
                                     @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable) {
         return quoteService.getQuotesByUser(username, pageable);

@@ -10,7 +10,7 @@
     </parent>
     <groupId>ru.sergeiproject</groupId>
     <artifactId>Quoter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>latest</version>
     <name>Quoter</name>
     <description>Quoter</description>
     <properties>
@@ -73,6 +73,9 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                    <image>
+                        <name>sergeinazarov/quoter</name>
+                    </image>
                 </configuration>
             </plugin>
         </plugins>

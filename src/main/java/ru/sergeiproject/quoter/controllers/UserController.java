@@ -62,22 +62,22 @@ public class UserController {
     }
 
     /**
-     * Get current user's quotes
+     * Get current user quotes
      */
     @GetMapping("/quotes")
     @RolesAllowed({"USER"})
-    @Operation(summary = "Get current user's quotes")
+    @Operation(summary = "Get current user quotes")
     Page<Quote> getCurrentUsersQuotes(@AuthenticationPrincipal CustomUserPrincipal userDetails,
                                       @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable) {
         return quoteService.getQuotesByUser(userDetails.getUser(), pageable);
     }
 
     /**
-     * Get current user's votes
+     * Get current user votes
      */
     @GetMapping(value = "/votes")
     @RolesAllowed({"USER"})
-    @Operation(summary = "Get current user's votes")
+    @Operation(summary = "Get current user votes")
     Page<QuoteRate> getCurrentUserLastVotes(@AuthenticationPrincipal CustomUserPrincipal userDetails,
                                             @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable
     ) {
