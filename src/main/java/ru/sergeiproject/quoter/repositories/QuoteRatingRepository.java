@@ -24,6 +24,6 @@ public interface QuoteRatingRepository extends JpaRepository<QuoteRate, Long> {
 
     void deleteByQuote(Quote quote);
 
-    @Query("SELECT new ru.sergeiproject.quoter.data.Point(q.created, SUM(q.grade) over(ORDER BY created)) from QuoteRate q where q.quote= :quote")
+    @Query("SELECT DISTINCT new ru.sergeiproject.quoter.data.Point(q.created, SUM(q.grade) over(ORDER BY created)) from QuoteRate q where q.quote= :quote")
     List<Point<LocalDateTime, Long>> getQuoteRatingGraph(Quote quote);
 }

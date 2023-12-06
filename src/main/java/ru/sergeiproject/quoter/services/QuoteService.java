@@ -73,11 +73,11 @@ public class QuoteService {
 
     }
 
-    public List<Quote> getQuotesByUser(User user, Pageable pageable) {
+    public Page<Quote> getQuotesByUser(User user, Pageable pageable) {
         return quoteRepository.findAllByAuthor(user, pageable);
     }
 
-    public List<Quote> getQuotesByUser(String username, Pageable pageable) {
+    public Page<Quote> getQuotesByUser(String username, Pageable pageable) {
         return quoteRepository.findAllByAuthor_Username(username, pageable);
     }
 
@@ -130,7 +130,7 @@ public class QuoteService {
         return quoteRatingRepository.findByUser(user, pageable);
     }
 
-    public List<Point<LocalDateTime, Long>> getQuoteRateGraph(Long quoteId) {
-        return quoteRatingRepository.getQuoteRatingGraph(Quote.builder().id(quoteId).build()).stream().distinct().toList();
+    public List<Point<LocalDateTime, Long>> getQuoteRatesGraph(Long quoteId) {
+        return quoteRatingRepository.getQuoteRatingGraph(Quote.builder().id(quoteId).build());
     }
 }

@@ -1,6 +1,9 @@
 package ru.sergeiproject.quoter.controllers;
 
 
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.view.RedirectView;
 import ru.sergeiproject.quoter.data.*;
 import ru.sergeiproject.quoter.security.CustomUserPrincipal;
 import ru.sergeiproject.quoter.errors.QuoteNotFoundException;
@@ -24,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 
+@Tag(name = "Quoter", description = "get quote info in different ways")
 @RestController
 public class QuoteRestController {
 
@@ -37,13 +42,17 @@ public class QuoteRestController {
         this.userService = userService;
     }
 
-    @GetMapping("/secret")
-    @RolesAllowed({"USER"})
-    String qwe() {
-        return "ready";
+    @GetMapping
+    @Hidden
+    RedirectView mainPage() {
+        return new RedirectView("/swagger-ui/index.html");
     }
 
+    /**
+     * Get quote by id
+     */
     @GetMapping("/quote/{id}")
+    @Operation(summary = "Get quote by id")
     Quote getQuote(@PathVariable("id") Long id) {
         Optional<Quote> quote = quoteService.getQuoteById(id);
         if (quote.isPresent()) {
@@ -53,9 +62,13 @@ public class QuoteRestController {
         }
     }
 
+    /**
+     * Delete quote by id. Allowed only if current user = quote author
+     */
     @DeleteMapping(value = "/quote/{id}")
     @RolesAllowed({"USER"})
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete quote by id")
     void deleteQuote(@PathVariable("id") Long id, @AuthenticationPrincipal CustomUserPrincipal userDetails) {
         boolean success = quoteService.deleteQuote(id, userDetails.getUser());
         if (!success) {
@@ -63,8 +76,12 @@ public class QuoteRestController {
         }
     }
 
+    /**
+     * Update quote by id. Allowed only if current user = quote author
+     */
     @PutMapping(value = "/quote/{id}")
     @RolesAllowed({"USER"})
+    @Operation(summary = "Update quote by id")
     Quote updateQuote(@PathVariable("id") Long id, @RequestBody QuoteDto quoteDto,
                       @AuthenticationPrincipal CustomUserPrincipal userDetails) {
         try {
@@ -76,59 +93,58 @@ public class QuoteRestController {
         }
     }
 
+    /**
+     * Create new quote
+     */
     @PostMapping("/quote")
     @RolesAllowed({"USER"})
+    @Operation(summary = "Create new quote")
     Quote createQuote(@RequestBody @Valid QuoteDto quoteDto, @AuthenticationPrincipal CustomUserPrincipal userDetails) {
         return quoteService.saveQuote(quoteDto, userDetails.getUser());
     }
 
-    @GetMapping("/user/quotes")
-    @RolesAllowed({"USER"})
-    List<Quote> getUsersQuotes(@AuthenticationPrincipal CustomUserPrincipal userDetails,
-                               @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable) {
-        return quoteService.getQuotesByUser(userDetails.getUser(), pageable);
-    }
-
-    @GetMapping("/user")
-    @RolesAllowed({"USER"})
-    User currentUser(@AuthenticationPrincipal CustomUserPrincipal userDetails) {
-        return userDetails.getUser();
-    }
-
-    @GetMapping("/users/{username}")
-    User getUserInfoByUsername(@PathVariable("username") String username) {
-        Optional<User> userInfo = userService.getUserInfo(username);
-        if (userInfo.isPresent()) {
-            return userInfo.get();
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username " + username + " not exists");
-        }
-    }
-
+    /**
+     * Get user's qutes
+     */
     @GetMapping("/users/{username}/quotes")
-    List<Quote> getQuotesByUsername(@PathVariable("username") String username,
+    @Operation(summary = "Get quotes by username")
+    Page<Quote> getQuotesByUsername(@PathVariable("username") String username,
                                     @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable) {
         return quoteService.getQuotesByUser(username, pageable);
     }
 
+    /**
+     * Get random quote
+     */
     @GetMapping("/quotes/random")
+    @Operation(summary = "Get random quote")
     Quote getRandomQuote() {
         return quoteService.getRandomQuote();
     }
 
+    /**
+     * Get quotes in different order (last, top, worst)
+     */
     @GetMapping("/quotes")
+    @Operation(summary = "Get quotes in different order (last, top, worst)")
     Page<Quote> getLastQuotes(@PageableDefault(sort = "created",
             direction = Sort.Direction.DESC) Pageable pageable) {
         return quoteService.getAllQuotes(pageable);
     }
 
+    /**
+     * Rate quote
+     *
+     * @param grade 1 - positive, -1 - negative, 0 - delete rate
+     */
     @PostMapping(value = "/quote/{id}/rate")
     @RolesAllowed({"USER"})
+    @Operation(summary = "Rate quote. 1 - positive, -1 - negative, 0 - delete rate")
     ResponseEntity<String> rateQuote(@PathVariable("id") Long id,
                                      @RequestParam(name = "grade") int grade,
                                      @AuthenticationPrincipal CustomUserPrincipal userDetails) {
         if (Math.abs(grade) - 1 != 0 && grade != 0) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Only 1 and -1 are available as a grade");
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Only 1, 0, -1 are available as a grade");
         }
         boolean success = quoteService.rateQuote(id, userDetails.getUser(), grade);
         if (success) {
@@ -138,17 +154,26 @@ public class QuoteRestController {
         }
     }
 
+    /**
+     * Get data for the "time-rating" graph
+     */
     @GetMapping(value = "/quote/{id}/graph")
+    @Operation(summary = "Get data for the \"time-rating\" graph")
     List<Point<LocalDateTime, Long>> rateQuote(@PathVariable("id") Long id) {
-        return quoteService.getQuoteRateGraph(id);
+        return quoteService.getQuoteRatesGraph(id);
     }
 
-
-    @GetMapping(value = "/user/votes")
-    @RolesAllowed({"USER"})
-    Page<QuoteRate> getCurrentUserLastVotes(@AuthenticationPrincipal CustomUserPrincipal userDetails,
-                                            @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
-        return quoteService.getUserLastVotes(userDetails.getUser(), pageable);
+    /**
+     * Get user info by username
+     */
+    @GetMapping("/users/{username}")
+    @Operation(summary = "Get user info by username")
+    User getUserInfoByUsername(@PathVariable("username") String username) {
+        Optional<User> userInfo = userService.getUserInfo(username);
+        if (userInfo.isPresent()) {
+            return userInfo.get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Username " + username + " not exists");
+        }
     }
 }
