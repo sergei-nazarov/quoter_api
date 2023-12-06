@@ -4,20 +4,25 @@ package ru.sergeiproject.quoter.controllers;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import ru.sergeiproject.quoter.data.CustomUserPrincipal;
-import ru.sergeiproject.quoter.data.Quote;
-import ru.sergeiproject.quoter.data.QuoteDto;
-import ru.sergeiproject.quoter.data.User;
+import ru.sergeiproject.quoter.data.*;
+import ru.sergeiproject.quoter.security.CustomUserPrincipal;
 import ru.sergeiproject.quoter.errors.QuoteNotFoundException;
 import ru.sergeiproject.quoter.services.QuoteService;
 import ru.sergeiproject.quoter.services.UserService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.SortedSet;
 
 @RestController
 public class QuoteRestController {
@@ -79,8 +84,9 @@ public class QuoteRestController {
 
     @GetMapping("/user/quotes")
     @RolesAllowed({"USER"})
-    List<Quote> getUsersQuotes(@AuthenticationPrincipal CustomUserPrincipal userDetails) {
-        return quoteService.getQuotesByUser(userDetails.getUser());
+    List<Quote> getUsersQuotes(@AuthenticationPrincipal CustomUserPrincipal userDetails,
+                               @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable) {
+        return quoteService.getQuotesByUser(userDetails.getUser(), pageable);
     }
 
     @GetMapping("/user")
@@ -100,12 +106,49 @@ public class QuoteRestController {
     }
 
     @GetMapping("/users/{username}/quotes")
-    List<Quote> getQuotesByUsername(@PathVariable("username") String username) {
-        return quoteService.getQuotesByUser(username);
+    List<Quote> getQuotesByUsername(@PathVariable("username") String username,
+                                    @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable) {
+        return quoteService.getQuotesByUser(username, pageable);
     }
 
     @GetMapping("/quotes/random")
-    Quote getRandomQuote(){
+    Quote getRandomQuote() {
         return quoteService.getRandomQuote();
+    }
+
+    @GetMapping("/quotes")
+    Page<Quote> getLastQuotes(@PageableDefault(sort = "created",
+            direction = Sort.Direction.DESC) Pageable pageable) {
+        return quoteService.getAllQuotes(pageable);
+    }
+
+    @PostMapping(value = "/quote/{id}/rate")
+    @RolesAllowed({"USER"})
+    ResponseEntity<String> rateQuote(@PathVariable("id") Long id,
+                                     @RequestParam(name = "grade") int grade,
+                                     @AuthenticationPrincipal CustomUserPrincipal userDetails) {
+        if (Math.abs(grade) - 1 != 0 && grade != 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "Only 1 and -1 are available as a grade");
+        }
+        boolean success = quoteService.rateQuote(id, userDetails.getUser(), grade);
+        if (success) {
+            return ResponseEntity.ok().build();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Quote not found");
+        }
+    }
+
+    @GetMapping(value = "/quote/{id}/graph")
+    List<Point<LocalDateTime, Long>> rateQuote(@PathVariable("id") Long id) {
+        return quoteService.getQuoteRateGraph(id);
+    }
+
+
+    @GetMapping(value = "/user/votes")
+    @RolesAllowed({"USER"})
+    Page<QuoteRate> getCurrentUserLastVotes(@AuthenticationPrincipal CustomUserPrincipal userDetails,
+                                            @PageableDefault(sort = "created", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return quoteService.getUserLastVotes(userDetails.getUser(), pageable);
     }
 }

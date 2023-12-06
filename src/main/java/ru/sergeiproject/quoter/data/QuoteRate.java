@@ -1,11 +1,12 @@
 package ru.sergeiproject.quoter.data;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,19 +15,22 @@ import java.util.List;
 @ToString
 @Builder
 @Entity
-@Table(name = "quotes")
-public class Quote {
+@Table(name = "quotes_rates")
+public class QuoteRate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
-    private String content;
-    private LocalDateTime created;
+
 
     @ManyToOne
-    private User author;
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
 
-    @Column(columnDefinition = "long default 0")
-    private long rating;
+    @ManyToOne
+    private Quote quote;
+    private LocalDateTime created;
 
+    private int grade;
 }

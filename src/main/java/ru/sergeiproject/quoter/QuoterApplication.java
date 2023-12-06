@@ -9,6 +9,7 @@ public class QuoterApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(QuoterApplication.class, args);
+        //todo score chart
     }
 
 }
